@@ -7,76 +7,29 @@ export default function GridView({
 }) {
 
   /*
-    VALID DOCUMENTS
-  */
-
-  const validDocuments =
-
-    documents.filter((document) =>
-
-      Array.isArray(
-        document.categorias
-      ) &&
-
-      document.categorias.length > 0
-
-    )
-
-  /*
     GROUP DOCUMENTS
     BY CATEGORY
   */
 
-  const groupedDocuments =
+  const groupedDocuments = documents.reduce(
+    (accumulator, document) => {
+      const categories = document.categorias;
 
-    validDocuments.reduce(
+      if (categories && categories.length > 0) {
+        categories.forEach((category) => {
+          if (!category) return;
 
-      (
-        accumulator,
-        document
-      ) => {
-
-        document.categorias.forEach(
-
-          (category) => {
-
-            /*
-              SKIP EMPTY
-            */
-
-            if (!category) return
-
-            /*
-              CREATE CATEGORY
-            */
-
-            if (
-              !accumulator[category]
-            ) {
-
-              accumulator[category] = []
-
-            }
-
-            /*
-              PUSH DOCUMENT
-            */
-
-            accumulator[category].push(
-              document
-            )
-
+          if (!accumulator[category]) {
+            accumulator[category] = [];
           }
+          accumulator[category].push(document);
+        });
+      }
 
-        )
-
-        return accumulator
-
-      },
-
-      {}
-
-    )
+      return accumulator;
+    },
+    {}
+  );
 
   /*
     CONVERT TO ARRAY

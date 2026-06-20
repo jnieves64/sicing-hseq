@@ -18,7 +18,6 @@ export default function ModuleGrid() {
     const { data, error } = await supabase
       .from('modulos')
       .select('*')
-      .eq('activo', true)
       .order('orden', { ascending: true })
 
     if (error) {

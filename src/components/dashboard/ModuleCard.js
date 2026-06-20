@@ -20,24 +20,89 @@ export default function ModuleCard({ module }) {
 
   const Icon = icons[module.icono]
 
+  if (module.activo) {
+    return (
+      <Link
+        href={module.ruta}
+        className="
+          group
+          bg-white
+          border
+          border-gray-300
+          rounded-2xl
+          p-6
+          flex
+          flex-col
+          items-center
+          hover:shadow-lg
+          hover:-translate-y-1
+          transition-all
+          duration-300
+          cursor-pointer
+        "
+      >
+  
+        <div className="
+          w-16
+          h-16
+          rounded-full
+          bg-yellow-50
+          flex
+          items-center
+          justify-center
+          mb-4
+        ">
+  
+          {Icon && (
+            <Icon
+              size={30}
+              className="
+                text-primary
+                transition-transform
+                duration-300
+                group-hover:scale-110
+              "
+            />
+          )}
+  
+        </div>
+  
+        <h2 className="
+          text-xl
+          font-semibold
+          text-gray-900
+          text-center
+        ">
+          {module.nombre}
+        </h2>
+  
+        <p className="
+          mt-3
+          text-sm
+          leading-relaxed
+          text-gray-500
+          text-left
+          w-full
+        ">
+          {module.descripcion}
+        </p>
+  
+      </Link>
+    )
+  }
+
   return (
-    <Link
-      href={module.ruta}
+    <div
       className="
-        group
-        bg-white
+        bg-gray-100
         border
-        border-gray-300
+        border-gray-200
         rounded-2xl
         p-6
         flex
         flex-col
         items-center
-        hover:shadow-lg
-        hover:-translate-y-1
-        transition-all
-        duration-300
-        cursor-pointer
+        cursor-not-allowed
       "
     >
 
@@ -45,7 +110,7 @@ export default function ModuleCard({ module }) {
         w-16
         h-16
         rounded-full
-        bg-yellow-50
+        bg-gray-200
         flex
         items-center
         justify-center
@@ -56,10 +121,7 @@ export default function ModuleCard({ module }) {
           <Icon
             size={30}
             className="
-              text-primary
-              transition-transform
-              duration-300
-              group-hover:scale-110
+              text-gray-400
             "
           />
         )}
@@ -69,7 +131,7 @@ export default function ModuleCard({ module }) {
       <h2 className="
         text-xl
         font-semibold
-        text-gray-900
+        text-gray-500
         text-center
       ">
         {module.nombre}
@@ -79,13 +141,13 @@ export default function ModuleCard({ module }) {
         mt-3
         text-sm
         leading-relaxed
-        text-gray-500
+        text-gray-400
         text-left
         w-full
       ">
         {module.descripcion}
       </p>
 
-    </Link>
+    </div>
   )
 }

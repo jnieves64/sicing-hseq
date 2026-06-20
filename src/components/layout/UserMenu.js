@@ -13,14 +13,14 @@ export default function UserMenu({ isLoggedIn }) {
         <button className="h-[36px] flex items-center gap-3 hover:bg-gray-100 px-2 rounded-xl transition-all">
             <div className="flex flex-col items-end leading-tight">
                 <span className="text-sm font-medium text-gray-900">
-                    Carlos Garcia
+                    Virginia Vega
                 </span>
                 <span className="text-xs text-gray-500">
-                    Supervisor HSEQ
+                    Jefa Administrativa
                 </span>
             </div>
             <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium text-gray-600">
-                CG
+                VV
             </div>
             <ChevronDown
                 size={18}
