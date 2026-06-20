@@ -104,7 +104,7 @@ export default function DocumentosPage() {
       <Header />
       <main className="max-w-[1216px] mx-auto px-4 py-8 space-y-8">
         <Breadcrumbs items={[{ label: 'Inicio', href: '/' }, { label: 'Documentos' }]} />
-        <PageHeader title="Documentos" description="Consulta procedimientos, instructivos y documentación controlada disponible en el portal HSEQ." />
+        <PageHeader title="Documentos" description="Consulta procedimientos, instructivos y documentación controlada disponible en el Sistema Integrado de Gestión." />
         <SummarySection documents={filteredDocuments} />
         <Toolbar
           categories={categories}

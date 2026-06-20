@@ -5,7 +5,7 @@ export default function DashboardHeader() {
           Accesos principales
         </h1>
         <p className="mt-2 text-base text-gray-500">
-          Módulos HSEQ disponibles para consulta y gestión de información
+          Módulos del Sistema Integrado de Gestión.
         </p>
       </div>
     )

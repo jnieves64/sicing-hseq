@@ -11,7 +11,7 @@ export default function HeaderBrand() {
                     SICING
                 </h1>
                 <p className="text-xs text-gray-500">
-                    Portal HSEQ
+                    Sistema Integrado de Gestión
                 </p>
             </div>
         </div>
