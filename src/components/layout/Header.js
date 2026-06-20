@@ -8,7 +8,7 @@ export default function Header() {
             <div className='max-w-[1200px] h-full mx-auto px-6 flex items-center justify-between'>
                 <HeaderBrand />
                 <SearchBar />
-                <UserMenu isLoggedIn={true} />
+                <UserMenu isLoggedIn={false} />
             </div>
         </header>
     )
