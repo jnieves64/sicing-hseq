@@ -2,7 +2,7 @@ export default function HeaderBrand() {
     return (
         <div className="flex items-center gap-3 h-[40px]">
             <img
-                src="https://i.postimg.cc/4NtL7hHh/image-(7).png" 
+                src="LOGOSICING.png" 
                 alt="SICING"
                 className="h-full object-contain"
             />
