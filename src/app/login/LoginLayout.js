@@ -1,9 +1,12 @@
 import LoginHero from "./LoginHero";
 import LoginFormCard from "./LoginFormCard";
+import LoginNotice from "@/components/auth/LoginNotice";
 
 export default function LoginLayout() {
   return (
     <main className="flex h-screen overflow-hidden">
+      <LoginNotice />
+
       {/* Panel izquierdo */}
       <div className="w-[45%]">
         <LoginHero />

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 import useAuth from '@/hooks/useAuth'
 
@@ -13,6 +13,7 @@ import SubmitButton from './SubmitButton'
 export default function LoginForm() {
 
     const router = useRouter()
+    const searchParams = useSearchParams()
 
     const { login } = useAuth()
 
@@ -49,7 +50,9 @@ export default function LoginForm() {
             return
         }
 
-        router.push('/')
+        const redirect = searchParams.get('redirect')
+
+        router.push(redirect || '/')
 
     }
 
