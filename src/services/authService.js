@@ -65,7 +65,8 @@ export async function getProfile(authUserId) {
             id,
             nombre,
             rol_id,
-            activo
+            activo,
+            aprobado
         `)
         .eq('auth_user_id', authUserId)
         .single()
@@ -74,6 +75,22 @@ export async function getProfile(authUserId) {
         return {
             profile: null,
             error: userError
+        }
+    }
+
+    // Si el usuario aún no ha sido aprobado, no buscamos rol
+    // (probablemente sea null de todas formas) y devolvemos
+    // el perfil marcado como no aprobado para que AuthContext decida.
+    if (!user.aprobado) {
+        return {
+            profile: {
+                id: user.id,
+                nombre: user.nombre,
+                activo: user.activo,
+                aprobado: false,
+                rol: null
+            },
+            error: null
         }
     }
 
@@ -102,6 +119,7 @@ export async function getProfile(authUserId) {
             id: user.id,
             nombre: user.nombre,
             activo: user.activo,
+            aprobado: true,
             rol: role
         },
         error: null

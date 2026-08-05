@@ -1,10 +1,8 @@
 'use client'
 
-import { createContext, useState } from 'react'
+import { createContext, useState, useEffect, useRef } from 'react'
 
 export const AuthContext = createContext(null)
-
-import { useEffect } from 'react'
 
 import {
     login as loginService,
@@ -32,16 +30,58 @@ export function AuthProvider({ children }) {
     // Estado de autenticación
     const [isAuthenticated, setIsAuthenticated] = useState(false)
 
+    // Usuario autenticado en Supabase pero aún no aprobado por un administrador
+    const [pendingApproval, setPendingApproval] = useState(false)
+
+    const isManualAuthAction = useRef(false)
+
     const login = async (email, password) => {
 
-        const { data, error } = await loginService(
-            email,
-            password
-        )
+        isManualAuthAction.current = true
 
-        return {
-            data,
-            error
+        try {
+
+            const { data, error } = await loginService(email, password)
+
+            if (error || !data?.session) {
+                return { error, pendingApproval: false }
+            }
+
+            const { profile, error: profileError } = await getProfile(data.session.user.id)
+
+            if (profileError || !profile) {
+                return { error: profileError, pendingApproval: false }
+            }
+
+            if (!profile.aprobado) {
+
+                await logoutService()
+
+                setSession(null)
+                setAuthUser(null)
+                setProfile(null)
+
+                setIsAuthenticated(false)
+                setPendingApproval(true)
+                setLoading(false)
+
+                return { error: null, pendingApproval: true }
+            }
+
+            setSession(data.session)
+            setAuthUser(data.session.user)
+            setProfile(profile)
+
+            setIsAuthenticated(true)
+            setPendingApproval(false)
+            setLoading(false)
+
+            return { error: null, pendingApproval: false }
+
+        } finally {
+
+            isManualAuthAction.current = false
+
         }
 
     }
@@ -49,7 +89,7 @@ export function AuthProvider({ children }) {
     const logout = async () => {
 
         await logoutService()
-    
+
     }
 
     const refreshSession = async () => {
@@ -69,6 +109,7 @@ export function AuthProvider({ children }) {
             setProfile(null)
 
             setIsAuthenticated(false)
+            setPendingApproval(false)
             setLoading(false)
 
             return
@@ -87,6 +128,25 @@ export function AuthProvider({ children }) {
             setProfile(null)
 
             setIsAuthenticated(false)
+            setPendingApproval(false)
+            setLoading(false)
+
+            return
+        }
+
+        // Usuario válido en Auth, pero aún no aprobado por un administrador:
+        // se cierra la sesión y se marca pendingApproval para que el login
+        // pueda mostrar el mensaje correspondiente.
+        if (!profile.aprobado) {
+
+            await logoutService()
+
+            setSession(null)
+            setAuthUser(null)
+            setProfile(null)
+
+            setIsAuthenticated(false)
+            setPendingApproval(true)
             setLoading(false)
 
             return
@@ -98,6 +158,7 @@ export function AuthProvider({ children }) {
         setProfile(profile)
 
         setIsAuthenticated(true)
+        setPendingApproval(false)
 
         setLoading(false)
 
@@ -105,25 +166,27 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
 
-        // Verifica si existe una sesión al iniciar la aplicación
         refreshSession()
 
-        // Escucha cambios en la autenticación
         const {
             data: { subscription }
         } = supabase.auth.onAuthStateChange((event) => {
 
             console.log(event)
 
+            // Si login() ya está manejando el cambio de sesión de forma
+            // controlada, no dejamos que el listener también reaccione
+            // y genere una carrera de estados.
+            if (isManualAuthAction.current) {
+                return
+            }
+
             refreshSession()
 
         })
 
-        // Limpia la suscripción al desmontar el Provider
         return () => {
-
             subscription.unsubscribe()
-
         }
 
     }, [])
@@ -162,6 +225,7 @@ export function AuthProvider({ children }) {
                 session,
                 profile,
                 isAuthenticated,
+                pendingApproval,
                 refreshSession,
                 login,
                 logout

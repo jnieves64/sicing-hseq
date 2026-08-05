@@ -1,5 +1,7 @@
 export default function SubmitButton({
   loading = false,
+  label = "Iniciar sesión",
+  loadingLabel = "Iniciando sesión...",
 }) {
   return (
     <button
@@ -23,7 +25,7 @@ export default function SubmitButton({
         text-black
       `}
     >
-      {loading ? "Iniciando sesión..." : "Iniciar sesión"}
+      {loading ? loadingLabel : label}
     </button>
   );
 }

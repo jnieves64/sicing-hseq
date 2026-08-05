@@ -15,7 +15,7 @@ export default function LoginForm() {
     const router = useRouter()
     const searchParams = useSearchParams()
 
-    const { login } = useAuth()
+    const { login, pendingApproval } = useAuth()
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -41,12 +41,17 @@ export default function LoginForm() {
 
         setLoading(true)
 
-        const { error } = await login(email, password)
+        const { error, pendingApproval } = await login(email, password)
 
         setLoading(false)
 
         if (error) {
             setError('Correo o contraseña incorrectos.')
+            return
+        }
+
+        if (pendingApproval) {
+            setError('Tu cuenta está pendiente de aprobación por un administrador.')
             return
         }
 
@@ -84,12 +89,17 @@ export default function LoginForm() {
             />
 
             <div className="flex justify-center pt-2">
-
                 <SubmitButton
                     loading={loading}
                 />
-
             </div>
+
+            <p className="text-center text-sm text-gray-600">
+                ¿No tienes cuenta?{' '}
+                <a href="/registro" className="text-blue-600 hover:underline">
+                    Regístrate
+                </a>
+            </p>
 
         </form>
 
