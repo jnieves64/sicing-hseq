@@ -1,10 +1,12 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 export default function DropdownMenu({
-    onLogout
+    onLogout,
+    isAdmin
 }) {
 
     const router = useRouter()
@@ -51,6 +53,30 @@ export default function DropdownMenu({
 
             {/* Acciones */}
             <div className="py-2">
+
+                {isAdmin && (
+                    <Link
+                        href="/admin/usuarios"
+                        className="
+                            w-full
+                            flex
+                            items-center
+                            gap-3
+                            px-5
+                            py-3
+                            text-gray-700
+                            hover:bg-gray-50
+                            transition-colors
+                        "
+                    >
+                        <Settings size={18} />
+
+                        <span className="text-sm font-medium">
+                            Panel administrativo
+                        </span>
+
+                    </Link>
+                )}
 
                 <button
                     onClick={handleLogout}

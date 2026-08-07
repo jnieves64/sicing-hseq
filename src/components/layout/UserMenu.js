@@ -166,6 +166,7 @@ export default function UserMenu() {
                 open && (
                     <DropdownMenu
                         onLogout={logout}
+                        isAdmin={profile?.rol?.nombre === 'administrador'}
                     />
                 )
             }

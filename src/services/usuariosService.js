@@ -71,9 +71,14 @@ export async function aprobarUsuario(usuarioId, rolId) {
  */
 export async function rechazarUsuario(usuarioId) {
 
+    const { data: { session } } = await supabase.auth.getSession()
+
     const response = await fetch('/api/admin/usuarios/rechazar', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session?.access_token}`
+        },
         body: JSON.stringify({ usuarioId })
     })
 
@@ -103,5 +108,61 @@ export async function getCargos() {
         .order('nombre', { ascending: true })
 
     return { cargos: cargos || [], error }
+
+}
+
+async function authHeader() {
+    const { data: { session } } = await supabase.auth.getSession()
+    return { Authorization: `Bearer ${session?.access_token}` }
+}
+
+export async function getSolicitudes() {
+
+    const response = await fetch('/api/admin/usuarios', {
+        headers: await authHeader()
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+        return { usuarios: [], error: data?.error }
+    }
+
+    return { usuarios: data.usuarios, error: null }
+
+}
+
+export async function guardarUsuario(usuarioId, { rolId, cargoId }) {
+
+    const response = await fetch('/api/admin/usuarios', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(await authHeader())
+        },
+        body: JSON.stringify({ usuarioId, rolId, cargoId })
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+        return { error: data?.error }
+    }
+
+    return { usuario: data.usuario, error: null }
+
+}
+
+export async function getRoles() {
+
+    const {
+        data: roles,
+        error
+    } = await supabase
+        .from('roles')
+        .select('id, nombre')
+        .order('nombre', { ascending: true })
+
+    return { roles: roles || [], error }
 
 }
