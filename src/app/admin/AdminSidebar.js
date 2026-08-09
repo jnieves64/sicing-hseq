@@ -6,7 +6,7 @@ import useAuth from "@/hooks/useAuth";
 
 const ADMIN_LINKS = [
   { label: "Gestión de usuarios", href: "/admin/usuarios", enabled: true },
-  { label: "Gestión de documentos", href: "/admin/documentos", enabled: false },
+  { label: "Gestión de documentos", href: "/admin/documentos", enabled: true },
 ];
 
 export default function AdminSidebar() {
