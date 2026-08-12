@@ -10,15 +10,19 @@ export default function RegistroHero() {
         items-center
         justify-center
         gap-6
-        h-full
-        px-10
+        h-auto
+        md:h-full
+        px-6
+        sm:px-10
+        py-10
+        md:py-0
         bg-[#272725]
       "
     >
       <PortalLogo />
 
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-semibold text-white">
+        <h1 className="text-xl sm:text-2xl font-semibold text-white">
           Únete al Portal SIG
         </h1>
         <p className="text-sm text-gray-300 max-w-xs">

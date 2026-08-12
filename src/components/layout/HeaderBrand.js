@@ -1,6 +1,6 @@
 export default function HeaderBrand() {
     return (
-        <div className="flex items-center gap-3 h-[40px]">
+        <div className="flex items-center gap-2 sm:gap-3 h-[40px] shrink-0">
             <img
                 src="/LOGOSICING.png"
                 alt="SICING"
@@ -10,7 +10,7 @@ export default function HeaderBrand() {
                 <h1 className="text-sm font-semibold text-gray-900">
                     SICING
                 </h1>
-                <p className="text-xs text-gray-500">
+                <p className="hidden sm:block text-xs text-gray-500">
                     Sistema Integrado de Gestión
                 </p>
             </div>

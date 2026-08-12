@@ -12,8 +12,12 @@ export default function LoginHero() {
         items-center
         justify-center
         gap-6
-        h-full
-        px-10
+        h-auto
+        md:h-full
+        px-6
+        sm:px-10
+        py-10
+        md:py-0
         bg-[#272725]
       "
     >

@@ -1,6 +1,6 @@
 export default function SummaryCards({ total = 0, activos = 0, inactivos = 0 }) {
   return (
-    <div className="grid grid-cols-3 gap-4 max-w-2xl">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl">
 
       <div className="bg-white rounded-xl border border-gray-200 p-5">
         <p className="text-sm text-gray-500">Total documentos</p>

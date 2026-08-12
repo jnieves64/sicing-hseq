@@ -65,6 +65,7 @@ export async function getProfile(authUserId) {
             id,
             nombre,
             rol_id,
+            cargo_id,
             activo,
             aprobado
         `)
@@ -78,9 +79,6 @@ export async function getProfile(authUserId) {
         }
     }
 
-    // Si el usuario aún no ha sido aprobado, no buscamos rol
-    // (probablemente sea null de todas formas) y devolvemos
-    // el perfil marcado como no aprobado para que AuthContext decida.
     if (!user.aprobado) {
         return {
             profile: {
@@ -88,7 +86,8 @@ export async function getProfile(authUserId) {
                 nombre: user.nombre,
                 activo: user.activo,
                 aprobado: false,
-                rol: null
+                rol: null,
+                cargo: null
             },
             error: null
         }
@@ -104,11 +103,21 @@ export async function getProfile(authUserId) {
         .eq("id", user.rol_id)
         .single()
 
+    // Buscar cargo (puede ser null, ya que cargo_id es opcional)
+    const {
+        data: cargo
+    } = await supabase
+        .from("cargos")
+        .select("id,nombre")
+        .eq("id", user.cargo_id)
+        .single()
+
     if (roleError) {
         return {
             profile: {
                 ...user,
-                rol: null
+                rol: null,
+                cargo: cargo || null
             },
             error: null
         }
@@ -120,7 +129,8 @@ export async function getProfile(authUserId) {
             nombre: user.nombre,
             activo: user.activo,
             aprobado: true,
-            rol: role
+            rol: role,
+            cargo: cargo || null
         },
         error: null
     }

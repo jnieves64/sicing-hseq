@@ -11,7 +11,8 @@ export default function RegistroFormCard() {
         shadow-sm
         border
         border-gray-200
-        p-8
+        p-6
+        sm:p-8
       "
     >
       <RegistroForm />

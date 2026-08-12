@@ -9,7 +9,7 @@ export default function PortalLogo() {
         width={140}
         height={140}
         priority
-        className="h-auto w-auto"
+        className="h-20 w-20 sm:h-28 sm:w-28 md:h-[140px] md:w-[140px]"
       />
     </div>
   );

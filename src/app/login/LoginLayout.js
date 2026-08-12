@@ -4,27 +4,32 @@ import LoginNotice from "@/components/auth/LoginNotice";
 
 export default function LoginLayout() {
   return (
-    <main className="flex h-screen overflow-hidden">
+    <main className="flex flex-col md:flex-row min-h-screen md:h-screen md:overflow-hidden">
       <LoginNotice />
 
       {/* Panel izquierdo */}
-      <div className="w-[45%]">
+      <div className="w-full md:w-[45%] shrink-0">
         <LoginHero />
       </div>
 
       {/* Panel derecho */}
       <div
         className="
-          w-[55%]
+          w-full
+          md:w-[55%]
           flex
           items-center
           justify-center
           bg-gray-100
-          px-8
+          px-6
+          sm:px-8
+          py-10
+          md:py-0
         "
       >
         <LoginFormCard />
       </div>
+
     </main>
   );
 }

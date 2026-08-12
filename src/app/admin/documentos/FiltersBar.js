@@ -8,7 +8,7 @@ export default function FiltersBar({
   onEstadoChange,
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 flex gap-6">
+    <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col sm:flex-row gap-4 sm:gap-6">
 
       <div className="flex flex-col gap-1">
         <label className="text-sm font-medium text-gray-700">Categoría</label>

@@ -92,9 +92,13 @@ export function AuthProvider({ children }) {
 
     }
 
-    const refreshSession = async () => {
+    const refreshSession = async (opciones = {}) => {
 
-        setLoading(true)
+        const silencioso = opciones.silencioso === true
+
+        if (!silencioso) {
+            setLoading(true)
+        }
 
         const {
             session,
@@ -110,7 +114,10 @@ export function AuthProvider({ children }) {
 
             setIsAuthenticated(false)
             setPendingApproval(false)
-            setLoading(false)
+
+            if (!silencioso) {
+                setLoading(false)
+            }
 
             return
         }
@@ -129,14 +136,14 @@ export function AuthProvider({ children }) {
 
             setIsAuthenticated(false)
             setPendingApproval(false)
-            setLoading(false)
+
+            if (!silencioso) {
+                setLoading(false)
+            }
 
             return
         }
 
-        // Usuario válido en Auth, pero aún no aprobado por un administrador:
-        // se cierra la sesión y se marca pendingApproval para que el login
-        // pueda mostrar el mensaje correspondiente.
         if (!profile.aprobado) {
 
             await logoutService()
@@ -147,7 +154,10 @@ export function AuthProvider({ children }) {
 
             setIsAuthenticated(false)
             setPendingApproval(true)
-            setLoading(false)
+
+            if (!silencioso) {
+                setLoading(false)
+            }
 
             return
         }
@@ -160,12 +170,16 @@ export function AuthProvider({ children }) {
         setIsAuthenticated(true)
         setPendingApproval(false)
 
-        setLoading(false)
+        if (!silencioso) {
+            setLoading(false)
+        }
 
     }
 
     useEffect(() => {
 
+        // Única llamada que sí debe mostrar el estado de carga completo:
+        // la verificación inicial de sesión al montar la app.
         refreshSession()
 
         const {
@@ -174,14 +188,16 @@ export function AuthProvider({ children }) {
 
             console.log(event)
 
-            // Si login() ya está manejando el cambio de sesión de forma
-            // controlada, no dejamos que el listener también reaccione
-            // y genere una carrera de estados.
             if (isManualAuthAction.current) {
                 return
             }
 
-            refreshSession()
+            // Cualquier evento disparado por el listener después del montaje
+            // inicial (incluyendo SIGNED_IN al recuperar el foco de la pestaña,
+            // que es justamente nuestro caso) se maneja en silencio: actualiza
+            // session/profile sin tocar `loading`, para no desmontar los guards
+            // y perder el progreso del usuario en formularios abiertos.
+            refreshSession({ silencioso: true })
 
         })
 

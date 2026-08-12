@@ -70,19 +70,22 @@ export default function UserMenu() {
             <Link
                 href="/login"
                 className="
-                    h-[36px]
-                    px-4
-                    rounded-xl
-                    border
-                    border-gray-300
-                    text-sm
-                    font-medium
-                    hover:bg-gray-100
-                    transition-all
-                    flex
-                    items-center
-                    justify-center
-                "
+        h-[36px]
+        px-3
+        sm:px-4
+        rounded-xl
+        border
+        border-gray-300
+        text-sm
+        font-medium
+        hover:bg-gray-100
+        transition-all
+        flex
+        items-center
+        justify-center
+        whitespace-nowrap
+        shrink-0
+    "
             >
                 Iniciar Sesión
             </Link>
@@ -115,14 +118,14 @@ export default function UserMenu() {
                 "
             >
 
-                <div className="flex flex-col items-end leading-tight">
+                <div className="hidden sm:flex flex-col items-end leading-tight">
 
                     <span className="text-sm font-medium text-gray-900">
                         {profile?.nombre}
                     </span>
 
                     <span className="text-xs text-gray-500">
-                        {profile?.rol?.nombre}
+                        {profile?.cargo?.nombre || profile?.rol?.nombre}
                     </span>
 
                 </div>

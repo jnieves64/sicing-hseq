@@ -2,10 +2,12 @@ export default function PortalDescription() {
     return (
       <p
         className="
-          max-w-md
+          max-w-xs
+          sm:max-w-md
           text-center
           text-white
-          text-lg
+          text-base
+          sm:text-lg
           leading-relaxed
         "
       >

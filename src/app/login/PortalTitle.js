@@ -4,7 +4,9 @@ export default function PortalTitle() {
         className="
           text-center
           text-white
-          text-5xl
+          text-3xl
+          sm:text-4xl
+          md:text-5xl
           font-bold
           tracking-tight
         "
