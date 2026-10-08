@@ -23,7 +23,7 @@ export async function getCampanas() {
             )
         `)
         .eq('activo', true)
-        .order('created_at', { ascending: false })
+        .order('orden', { ascending: true })
 
     if (error) {
         return { campanas: [], error }

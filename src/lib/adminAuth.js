@@ -11,7 +11,7 @@ export async function verificarAdmin(request) {
     const token = authHeader?.replace('Bearer ', '')
 
     if (!token) {
-        return { autorizado: false }
+        return { autorizado: false, usuarioId: null }
     }
 
     const {
@@ -20,7 +20,7 @@ export async function verificarAdmin(request) {
     } = await supabaseAdmin.auth.getUser(token)
 
     if (userError || !user) {
-        return { autorizado: false }
+        return { autorizado: false, usuarioId: null }
     }
 
     const {
@@ -33,9 +33,9 @@ export async function verificarAdmin(request) {
         .single()
 
     if (perfilError || perfil?.roles?.nombre !== 'administrador') {
-        return { autorizado: false }
+        return { autorizado: false, usuarioId: null }
     }
 
-    return { autorizado: true }
+    return { autorizado: true, usuarioId: perfil.id }
 
 }
