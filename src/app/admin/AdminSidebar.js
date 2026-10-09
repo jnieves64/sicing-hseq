@@ -8,7 +8,8 @@ import useAuth from "@/hooks/useAuth";
 const ADMIN_LINKS = [
   { label: "Gestión de usuarios", href: "/admin/usuarios", enabled: true },
   { label: "Gestión de documentos", href: "/admin/documentos", enabled: true },
-  { label: "Gestión de campañas", href: "/admin/campanas", enabled: true}, 
+  { label: "Gestión de campañas", href: "/admin/campanas", enabled: true },
+  { label: "Gestión de indicadores", href: "/admin/indicadores", enabled: true },
 ];
 
 export default function AdminSidebar({ isOpen, onClose }) {
