@@ -338,14 +338,96 @@ export function prepararDatosParaGuardar(columnas, filas) {
 /**
  * Quita de las gráficas las referencias a columnas que ya no existen.
  */
+/**
+ * Quita de las gráficas las referencias a columnas que ya no existen
+ * (o que dejaron de ser numéricas, en el caso de las series).
+ */
 export function limpiarGraficas(graficas = [], columnas = []) {
 
-    const keys = new Set(columnas.map((columna) => columna.key))
+    const todas = new Set(columnas.map((columna) => columna.key))
+    const numericas = new Set(
+        columnas.filter((columna) => columna.formato !== 'texto').map((columna) => columna.key)
+    )
 
     return graficas.map((grafica) => ({
         ...grafica,
-        x: keys.has(grafica.x) ? grafica.x : '',
-        series: (grafica.series || []).filter((key) => keys.has(key))
+        x: todas.has(grafica.x) ? grafica.x : '',
+        series: (grafica.series || []).filter((key) => numericas.has(key))
     }))
+
+}
+
+/**
+ * Filas tipadas "a la ligera" para la vista previa de las gráficas:
+ * ignora filas vacías y deja en null lo que no se pueda leer como número,
+ * sin lanzar errores mientras el admin todavía está escribiendo.
+ */
+export function filasParaVistaPrevia(columnas = [], filas = []) {
+
+    return filas
+        .filter((fila) =>
+            columnas.some((columna) => String(fila[columna.key] ?? '').trim() !== '')
+        )
+        .map((fila) => {
+            const tipada = {}
+            columnas.forEach((columna) => {
+                const texto = String(fila[columna.key] ?? '').trim()
+                tipada[columna.key] = columna.formato === 'texto' ? texto : parsearNumero(texto)
+            })
+            return tipada
+        })
+
+}
+
+/**
+ * Siguiente id libre para una gráfica nueva (g1, g2, ...).
+ */
+export function generarIdGrafica(graficas = []) {
+
+    const maximo = graficas.reduce((max, grafica) => {
+        const numero = parseInt(String(grafica.id).replace('g', ''), 10)
+        return Number.isNaN(numero) ? max : Math.max(max, numero)
+    }, 0)
+
+    return `g${maximo + 1}`
+
+}
+
+/**
+ * Revisa que cada gráfica esté completa antes de guardar.
+ * Devuelve un mensaje de error o null si todo está bien.
+ */
+export function validarGraficas(graficas = []) {
+
+    for (let i = 0; i < graficas.length; i++) {
+
+        const grafica = graficas[i]
+        const nombre = `Gráfica ${i + 1}`
+        const esTorta = grafica.tipo === 'pie'
+        const tortaPorColumnas = esTorta && grafica.modoTorta === 'columnas'
+
+        if (!grafica.titulo || !grafica.titulo.trim()) {
+            return `${nombre}: escribe un título.`
+        }
+
+        if (!tortaPorColumnas && !grafica.x) {
+            return `${nombre}: elige la columna de categorías.`
+        }
+
+        if (esTorta && !tortaPorColumnas && grafica.series.length !== 1) {
+            return `${nombre}: elige la columna de valores.`
+        }
+
+        if (tortaPorColumnas && grafica.series.length < 2) {
+            return `${nombre}: elige al menos dos columnas para comparar en la torta.`
+        }
+
+        if (!esTorta && grafica.series.length < 1) {
+            return `${nombre}: elige al menos una columna de valores.`
+        }
+
+    }
+
+    return null
 
 }

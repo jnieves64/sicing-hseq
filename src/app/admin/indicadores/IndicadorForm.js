@@ -1,14 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 
 import DataGridEditor from './DataGridEditor'
+import GraficasEditor from './GraficasEditor'
 
 import {
     filasATexto,
     prepararDatosParaGuardar,
-    limpiarGraficas
+    limpiarGraficas,
+    validarGraficas,
+    filasParaVistaPrevia
 } from '@/lib/indicadoresHelpers'
 
 const COLUMNAS_INICIALES = [
@@ -43,15 +46,28 @@ export default function IndicadorForm({ indicador, onSubmit }) {
             : crearFilasIniciales(tieneColumnas ? indicador.columnas : COLUMNAS_INICIALES)
     )
 
-    // Por ahora las gráficas se conservan tal cual; el editor de gráficas llega en el siguiente paso.
-    const [graficas] = useState(indicador?.graficas ?? [])
+    const [graficas, setGraficas] = useState(indicador?.graficas ?? [])
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
 
-    const handleGridChange = ({ columnas, filas }) => {
-        setColumnas(columnas)
-        setFilas(filas)
+    // Datos tipados "a la ligera" para que las vistas previas se actualicen mientras se escribe
+    const filasVistaPrevia = useMemo(
+        () => filasParaVistaPrevia(columnas, filas),
+        [columnas, filas]
+    )
+
+    const handleGridChange = ({ columnas: nuevasColumnas, filas: nuevasFilas }) => {
+
+        // Si cambió la estructura de columnas, las gráficas dejan de apuntar
+        // a columnas que ya no existen o que dejaron de ser numéricas.
+        if (nuevasColumnas !== columnas) {
+            setGraficas((actuales) => limpiarGraficas(actuales, nuevasColumnas))
+        }
+
+        setColumnas(nuevasColumnas)
+        setFilas(nuevasFilas)
+
     }
 
     // Evita que Enter dentro de un campo envíe el formulario sin querer
@@ -78,6 +94,14 @@ export default function IndicadorForm({ indicador, onSubmit }) {
             return
         }
 
+        const graficasLimpias = limpiarGraficas(graficas, datos.columnas)
+        const errorGraficas = validarGraficas(graficasLimpias)
+
+        if (errorGraficas) {
+            setError(errorGraficas)
+            return
+        }
+
         setLoading(true)
 
         const { error } = await onSubmit({
@@ -85,7 +109,10 @@ export default function IndicadorForm({ indicador, onSubmit }) {
             descripcion: descripcion.trim(),
             columnas: datos.columnas,
             filas: datos.filas,
-            graficas: limpiarGraficas(graficas, datos.columnas),
+            graficas: graficasLimpias.map((grafica) => ({
+                ...grafica,
+                titulo: grafica.titulo.trim()
+            })),
             activo
         })
 
@@ -166,6 +193,23 @@ export default function IndicadorForm({ indicador, onSubmit }) {
                     columnas={columnas}
                     filas={filas}
                     onChange={handleGridChange}
+                />
+
+            </section>
+
+            {/* Gráficas */}
+            <section className="bg-white rounded-xl border border-gray-200 p-5 sm:p-8 space-y-5">
+
+                <div>
+                    <h2 className="text-base font-semibold text-black">Gráficas</h2>
+                    <p className="text-sm text-gray-500 mt-1">Selecciona cómo quieres visualizar los datos.</p>
+                </div>
+
+                <GraficasEditor
+                    graficas={graficas}
+                    columnas={columnas}
+                    filasVistaPrevia={filasVistaPrevia}
+                    onChange={setGraficas}
                 />
 
             </section>
