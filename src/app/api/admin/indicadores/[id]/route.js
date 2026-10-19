@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin, verificarAdmin } from '@/lib/adminAuth'
 
-const CAMPOS_CONTENIDO = ['titulo', 'descripcion', 'columnas', 'filas', 'graficas']
+const CAMPOS_CONTENIDO = ['titulo', 'descripcion', 'tablas', 'graficas']
 
 export async function GET(request, { params }) {
 
@@ -18,7 +18,7 @@ export async function GET(request, { params }) {
         error
     } = await supabaseAdmin
         .from('indicadores')
-        .select('id, titulo, descripcion, columnas, filas, graficas, activo')
+        .select('id, titulo, descripcion, tablas, graficas, activo')
         .eq('id', id)
         .single()
 
@@ -59,10 +59,14 @@ export async function PATCH(request, { params }) {
         return NextResponse.json({ error: 'El título es obligatorio.' }, { status: 400 })
     }
 
-    for (const campo of ['columnas', 'filas', 'graficas']) {
+    for (const campo of ['tablas', 'graficas']) {
         if (campos[campo] !== undefined && !Array.isArray(campos[campo])) {
             return NextResponse.json({ error: 'Formato de datos inválido.' }, { status: 400 })
         }
+    }
+
+    if (campos.tablas !== undefined && campos.tablas.length === 0) {
+        return NextResponse.json({ error: 'El indicador debe tener al menos una tabla.' }, { status: 400 })
     }
 
     // "Actualizado el..." solo cambia cuando se edita el contenido,

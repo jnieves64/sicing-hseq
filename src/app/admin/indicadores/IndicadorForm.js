@@ -1,72 +1,77 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
-import DataGridEditor from './DataGridEditor'
+import TablasEditor from './TablasEditor'
 import GraficasEditor from './GraficasEditor'
 
 import {
-    filasATexto,
-    prepararDatosParaGuardar,
+    crearTablaVacia,
+    tablaATexto,
+    tablaParaVistaPrevia,
+    prepararTablasParaGuardar,
     limpiarGraficas,
     validarGraficas,
-    filasParaVistaPrevia
+    esFilaSeccion
 } from '@/lib/indicadoresHelpers'
 
-const COLUMNAS_INICIALES = [
-    { key: 'col_1', label: 'Columna 1', formato: 'texto' },
-    { key: 'col_2', label: 'Columna 2', formato: 'numero' },
-    { key: 'col_3', label: 'Columna 3', formato: 'numero' }
-]
-
-function crearFilasIniciales(columnas) {
-    return Array.from({ length: 5 }, () =>
-        Object.fromEntries(columnas.map((columna) => [columna.key, '']))
-    )
+// Resumen de la estructura de las tablas (ids, columnas, formatos y filas de datos).
+// Solo cuando cambia se limpian las gráficas, no en cada tecla.
+function firmaDeEstructura(tablas) {
+    return tablas
+        .map((tabla) =>
+            [
+                tabla.id,
+                tabla.formatoPor,
+                tabla.columnas.map((columna) => `${columna.key}:${columna.formato}`).join(','),
+                tabla.filas.filter((fila) => !esFilaSeccion(fila)).map((fila) => fila._id).join(',')
+            ].join('|')
+        )
+        .join('||')
 }
 
 export default function IndicadorForm({ indicador, onSubmit }) {
 
     const router = useRouter()
     const esEdicion = Boolean(indicador)
-    const tieneColumnas = Boolean(indicador?.columnas?.length)
 
     const [titulo, setTitulo] = useState(indicador?.titulo || '')
     const [descripcion, setDescripcion] = useState(indicador?.descripcion || '')
     const [activo, setActivo] = useState(indicador?.activo ?? true)
 
-    const [columnas, setColumnas] = useState(
-        tieneColumnas ? indicador.columnas : COLUMNAS_INICIALES
-    )
-
-    const [filas, setFilas] = useState(
-        tieneColumnas && indicador.filas?.length
-            ? filasATexto(indicador.columnas, indicador.filas)
-            : crearFilasIniciales(tieneColumnas ? indicador.columnas : COLUMNAS_INICIALES)
+    const [tablas, setTablas] = useState(() =>
+        indicador?.tablas?.length
+            ? indicador.tablas.map(tablaATexto)
+            : [crearTablaVacia('t1')]
     )
 
     const [graficas, setGraficas] = useState(indicador?.graficas ?? [])
 
+    const firmaAnterior = useRef(firmaDeEstructura(tablas))
+
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
 
-    // Datos tipados "a la ligera" para que las vistas previas se actualicen mientras se escribe
-    const filasVistaPrevia = useMemo(
-        () => filasParaVistaPrevia(columnas, filas),
-        [columnas, filas]
+    // Tablas con valores tipados "a la ligera" para que las vistas previas
+    // se actualicen mientras se escribe, sin lanzar errores.
+    const tablasVistaPrevia = useMemo(
+        () => tablas.map(tablaParaVistaPrevia),
+        [tablas]
     )
 
-    const handleGridChange = ({ columnas: nuevasColumnas, filas: nuevasFilas }) => {
+    const handleTablasChange = (nuevasTablas) => {
 
-        // Si cambió la estructura de columnas, las gráficas dejan de apuntar
-        // a columnas que ya no existen o que dejaron de ser numéricas.
-        if (nuevasColumnas !== columnas) {
-            setGraficas((actuales) => limpiarGraficas(actuales, nuevasColumnas))
+        // Si cambió la estructura (tablas, columnas, filas o formatos), las gráficas
+        // dejan de apuntar a cosas que ya no existen.
+        const firma = firmaDeEstructura(nuevasTablas)
+
+        if (firma !== firmaAnterior.current) {
+            firmaAnterior.current = firma
+            setGraficas((actuales) => limpiarGraficas(actuales, nuevasTablas))
         }
 
-        setColumnas(nuevasColumnas)
-        setFilas(nuevasFilas)
+        setTablas(nuevasTablas)
 
     }
 
@@ -87,14 +92,18 @@ export default function IndicadorForm({ indicador, onSubmit }) {
             return
         }
 
-        const datos = prepararDatosParaGuardar(columnas, filas)
+        const resultado = prepararTablasParaGuardar(tablas)
 
-        if (datos.error) {
-            setError(datos.error)
+        if (resultado.error) {
+            setError(resultado.error)
             return
         }
 
-        const graficasLimpias = limpiarGraficas(graficas, datos.columnas)
+        const graficasLimpias = limpiarGraficas(
+            graficas.map((grafica) => ({ ...grafica, tabla: grafica.tabla ?? tablas[0].id })),
+            resultado.tablas
+        )
+
         const errorGraficas = validarGraficas(graficasLimpias)
 
         if (errorGraficas) {
@@ -107,8 +116,7 @@ export default function IndicadorForm({ indicador, onSubmit }) {
         const { error } = await onSubmit({
             titulo: titulo.trim(),
             descripcion: descripcion.trim(),
-            columnas: datos.columnas,
-            filas: datos.filas,
+            tablas: resultado.tablas,
             graficas: graficasLimpias.map((grafica) => ({
                 ...grafica,
                 titulo: grafica.titulo.trim()
@@ -186,13 +194,15 @@ export default function IndicadorForm({ indicador, onSubmit }) {
 
                 <div>
                     <h2 className="text-base font-semibold text-black">Datos</h2>
-                    <p className="text-sm text-gray-500 mt-1">Carga y estructura la información que alimentará tus gráficas.</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Carga y estructura la información que alimentará tus gráficas. Un indicador puede tener varias tablas.
+                    </p>
                 </div>
 
-                <DataGridEditor
-                    columnas={columnas}
-                    filas={filas}
-                    onChange={handleGridChange}
+                <TablasEditor
+                    tablas={tablas}
+                    graficas={graficas}
+                    onChange={handleTablasChange}
                 />
 
             </section>
@@ -207,8 +217,8 @@ export default function IndicadorForm({ indicador, onSubmit }) {
 
                 <GraficasEditor
                     graficas={graficas}
-                    columnas={columnas}
-                    filasVistaPrevia={filasVistaPrevia}
+                    tablas={tablas}
+                    tablasVistaPrevia={tablasVistaPrevia}
                     onChange={setGraficas}
                 />
 

@@ -28,7 +28,7 @@ export async function getIndicadorPorId(id) {
         error
     } = await supabase
         .from('indicadores')
-        .select('id, titulo, descripcion, columnas, filas, graficas, updated_at')
+        .select('id, titulo, descripcion, tablas, graficas, updated_at')
         .eq('id', id)
         .eq('activo', true)
         .single()

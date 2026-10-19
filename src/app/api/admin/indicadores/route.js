@@ -9,7 +9,7 @@ export async function GET(request) {
         return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
     }
 
-    // El listado no necesita columnas ni filas (son pesadas); solo lo que muestra la tabla.
+    // El listado no necesita las tablas (son pesadas); solo lo que muestra la tabla de admin.
     const {
         data: indicadores,
         error
@@ -40,7 +40,7 @@ export async function POST(request) {
         return NextResponse.json({ error: 'El título es obligatorio.' }, { status: 400 })
     }
 
-    if (!Array.isArray(body.columnas) || !Array.isArray(body.filas) || !Array.isArray(body.graficas)) {
+    if (!Array.isArray(body.tablas) || body.tablas.length === 0 || !Array.isArray(body.graficas)) {
         return NextResponse.json({ error: 'Formato de datos inválido.' }, { status: 400 })
     }
 
@@ -52,8 +52,7 @@ export async function POST(request) {
         .insert({
             titulo: String(body.titulo).trim(),
             descripcion: body.descripcion ?? '',
-            columnas: body.columnas,
-            filas: body.filas,
+            tablas: body.tablas,
             graficas: body.graficas,
             activo: body.activo ?? true,
             publicado_por: usuarioId

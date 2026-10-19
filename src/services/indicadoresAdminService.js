@@ -37,7 +37,7 @@ export async function getIndicadorAdminPorId(id) {
 
 }
 
-export async function crearIndicador({ titulo, descripcion, columnas, filas, graficas, activo }) {
+export async function crearIndicador({ titulo, descripcion, tablas, graficas, activo }) {
 
     const response = await fetch('/api/admin/indicadores', {
         method: 'POST',
@@ -45,7 +45,7 @@ export async function crearIndicador({ titulo, descripcion, columnas, filas, gra
             'Content-Type': 'application/json',
             ...(await authHeader())
         },
-        body: JSON.stringify({ titulo, descripcion, columnas, filas, graficas, activo })
+        body: JSON.stringify({ titulo, descripcion, tablas, graficas, activo })
     })
 
     const data = await response.json()
@@ -58,7 +58,7 @@ export async function crearIndicador({ titulo, descripcion, columnas, filas, gra
 
 }
 
-export async function actualizarIndicador(id, { titulo, descripcion, columnas, filas, graficas, activo }) {
+export async function actualizarIndicador(id, { titulo, descripcion, tablas, graficas, activo }) {
 
     const response = await fetch(`/api/admin/indicadores/${id}`, {
         method: 'PATCH',
@@ -66,7 +66,7 @@ export async function actualizarIndicador(id, { titulo, descripcion, columnas, f
             'Content-Type': 'application/json',
             ...(await authHeader())
         },
-        body: JSON.stringify({ titulo, descripcion, columnas, filas, graficas, activo })
+        body: JSON.stringify({ titulo, descripcion, tablas, graficas, activo })
     })
 
     const data = await response.json()

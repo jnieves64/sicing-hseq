@@ -10,7 +10,16 @@ import IndicadorChart from '@/components/indicadores/IndicadorChart'
 import IndicadorTabla from '@/components/indicadores/IndicadorTabla'
 
 import { getIndicadorPorId } from '@/services/indicadoresService'
-import { formatearFecha } from '@/lib/indicadoresHelpers'
+import { formatearFecha, tituloDeTabla } from '@/lib/indicadoresHelpers'
+
+function clasesGrilla(cantidad) {
+
+    if (cantidad === 1) return 'grid-cols-1 max-w-3xl'
+    if (cantidad === 2 || cantidad === 4) return 'grid-cols-1 md:grid-cols-2'
+
+    return 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'
+
+}
 
 export default function IndicadorDetallePageView() {
 
@@ -61,6 +70,9 @@ export default function IndicadorDetallePageView() {
         )
     }
 
+    const tablas = indicador.tablas || []
+    const graficas = indicador.graficas || []
+
     return (
         <div className="min-h-screen bg-gray-100">
             <Header />
@@ -81,9 +93,9 @@ export default function IndicadorDetallePageView() {
                     </p>
                 </div>
 
-                {indicador.graficas.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {indicador.graficas.map((grafica) => (
+                {graficas.length > 0 && (
+                    <div className={`grid gap-6 ${clasesGrilla(graficas.length)}`}>
+                        {graficas.map((grafica) => (
                             <div
                                 key={grafica.id}
                                 className="bg-white rounded-xl border border-gray-200 p-5"
@@ -91,22 +103,25 @@ export default function IndicadorDetallePageView() {
                                 <h2 className="text-sm font-semibold text-black mb-4">
                                     {grafica.titulo}
                                 </h2>
-                                <IndicadorChart
-                                    config={grafica}
-                                    columnas={indicador.columnas}
-                                    filas={indicador.filas}
-                                />
+                                <IndicadorChart config={grafica} tablas={tablas} />
                             </div>
                         ))}
                     </div>
                 )}
 
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                    <div className="p-5">
-                        <h2 className="text-base font-semibold text-black">Datos completos</h2>
+                {tablas.map((tabla, indice) => (
+                    <div
+                        key={tabla.id}
+                        className="bg-white rounded-xl border border-gray-200 overflow-hidden"
+                    >
+                        <div className="p-5">
+                            <h2 className="text-base font-semibold text-black">
+                                {tituloDeTabla(tabla, indice, tablas.length)}
+                            </h2>
+                        </div>
+                        <IndicadorTabla tabla={tabla} />
                     </div>
-                    <IndicadorTabla columnas={indicador.columnas} filas={indicador.filas} />
-                </div>
+                ))}
 
             </main>
         </div>
