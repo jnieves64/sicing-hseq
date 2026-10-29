@@ -10,6 +10,7 @@ const ADMIN_LINKS = [
   { label: "Gestión de documentos", href: "/admin/documentos", enabled: true },
   { label: "Gestión de campañas", href: "/admin/campanas", enabled: true },
   { label: "Gestión de indicadores", href: "/admin/indicadores", enabled: true },
+  { label: "Gestión de evaluaciones", href: "/admin/evaluaciones", enabled: true },
 ];
 
 export default function AdminSidebar({ isOpen, onClose }) {
