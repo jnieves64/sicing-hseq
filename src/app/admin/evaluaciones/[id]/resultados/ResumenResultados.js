@@ -1,9 +1,26 @@
-export default function ResumenResultados({ presentaron = 0, aprobaron = 0, refuerzo = 0, pendientes = 0 }) {
+export default function ResumenResultados({
+  presentaron = 0,
+  aprobaron = 0,
+  refuerzo = 0,
+  pendientes = 0,
+  minimo = 0,
+  total = 0
+}) {
+
+  const exigeTodas = minimo >= total
 
   const tarjetas = [
     { titulo: 'Presentaron', valor: presentaron, nota: 'Con resultado vigente' },
-    { titulo: 'Aprobaron', valor: aprobaron, nota: 'Todas correctas' },
-    { titulo: 'Requieren refuerzo', valor: refuerzo, nota: 'Con al menos una falla' },
+    {
+      titulo: 'Aprobaron',
+      valor: aprobaron,
+      nota: exigeTodas ? 'Todas correctas' : `${minimo} o más correctas`
+    },
+    {
+      titulo: 'Requieren refuerzo',
+      valor: refuerzo,
+      nota: exigeTodas ? 'Con al menos una falla' : `Menos de ${minimo} correctas`
+    },
     { titulo: 'Pendientes', valor: pendientes, nota: 'Aún sin presentar' },
   ]
 

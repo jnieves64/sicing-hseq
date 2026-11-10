@@ -156,6 +156,8 @@ export default function ResultadosPageView() {
                     {evaluacion.codigo ? `${evaluacion.codigo} · ` : ''}
                     {evaluacion.total_preguntas} pregunta{evaluacion.total_preguntas === 1 ? '' : 's'}
                     {' · '}
+                    Aprueba con {evaluacion.min_correctas} de {evaluacion.total_preguntas}
+                    {' · '}
                     {evaluacion.activo ? 'Publicada' : 'Borrador'}
                 </p>
             </div>
@@ -171,6 +173,8 @@ export default function ResultadosPageView() {
                 aprobaron={aprobaron}
                 refuerzo={refuerzo}
                 pendientes={pendientes.length}
+                minimo={evaluacion.min_correctas}
+                total={evaluacion.total_preguntas}
             />
 
             <div className="flex flex-wrap gap-2">

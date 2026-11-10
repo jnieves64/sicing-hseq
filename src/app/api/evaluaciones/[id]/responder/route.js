@@ -33,6 +33,7 @@ export async function POST(request, { params }) {
         .select(`
             id,
             activo,
+            min_correctas,
             preguntas (
                 id,
                 enunciado,
@@ -150,7 +151,9 @@ export async function POST(request, { params }) {
     }
 
     const puntajeMaximo = preguntas.length
-    const aprobado = aciertos === puntajeMaximo
+
+    // Aprueba quien alcanza el mínimo de respuestas correctas definido en la evaluación
+    const aprobado = aciertos >= evaluacion.min_correctas
 
     const resultado = {
         aprobado,

@@ -80,6 +80,21 @@ export function validarPreguntas(preguntas) {
 
 }
 
+// Mínimo de respuestas correctas para aprobar: entero entre 1 y el total de preguntas
+export function validarMinimo(minimo, totalPreguntas) {
+
+    if (!Number.isInteger(minimo) || minimo < 1) {
+        return 'El mínimo de respuestas correctas para aprobar debe ser un número entero desde 1.'
+    }
+
+    if (minimo > totalPreguntas) {
+        return `El mínimo para aprobar (${minimo}) no puede superar el número de preguntas (${totalPreguntas}). Ajusta el mínimo.`
+    }
+
+    return null
+
+}
+
 export async function contarIntentos(evaluacionId) {
 
     const { count, error } = await supabaseAdmin
@@ -90,6 +105,43 @@ export async function contarIntentos(evaluacionId) {
     if (error) return { total: 0, error: error.message }
 
     return { total: count || 0, error: null }
+
+}
+
+export async function contarPreguntas(evaluacionId) {
+
+    const { count, error } = await supabaseAdmin
+        .from('preguntas')
+        .select('id', { count: 'exact', head: true })
+        .eq('evaluacion_id', evaluacionId)
+
+    if (error) return { total: 0, error: error.message }
+
+    return { total: count || 0, error: null }
+
+}
+
+// Recalcula `aprobado` de todos los intentos de la evaluación con el mínimo vigente.
+// Usa el puntaje ya guardado, así que es seguro repetirlo (idempotente).
+export async function recalcularAprobados(evaluacionId, minimo) {
+
+    const { error: aprobadosError } = await supabaseAdmin
+        .from('intentos')
+        .update({ aprobado: true })
+        .eq('evaluacion_id', evaluacionId)
+        .gte('puntaje', minimo)
+
+    if (aprobadosError) return { error: aprobadosError.message }
+
+    const { error: refuerzoError } = await supabaseAdmin
+        .from('intentos')
+        .update({ aprobado: false })
+        .eq('evaluacion_id', evaluacionId)
+        .lt('puntaje', minimo)
+
+    if (refuerzoError) return { error: refuerzoError.message }
+
+    return { error: null }
 
 }
 

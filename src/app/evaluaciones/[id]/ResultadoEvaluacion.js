@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import { CheckCircle2, AlertTriangle } from 'lucide-react'
 
-export default function ResultadoEvaluacion({ resultado, onReintentar }) {
+export default function ResultadoEvaluacion({ resultado, minimo, onReintentar }) {
 
   const aprobado = resultado.aprobado
+  const maximo = resultado.puntaje_maximo
+  const minimoReal = minimo ?? maximo
 
   const fecha = resultado.fecha
     ? new Date(resultado.fecha).toLocaleDateString('es-CO', {
@@ -12,6 +14,14 @@ export default function ResultadoEvaluacion({ resultado, onReintentar }) {
         year: 'numeric'
       })
     : null
+
+  const mensajeAprobado = resultado.puntaje === maximo
+    ? 'Respondiste correctamente todas las preguntas.'
+    : `Alcanzaste el mínimo requerido para aprobar: ${minimoReal} de ${maximo} respuestas correctas.`
+
+  const requisito = minimoReal >= maximo
+    ? 'todas las preguntas'
+    : `al menos ${minimoReal} de ${maximo} preguntas`
 
   return (
 
@@ -48,7 +58,7 @@ export default function ResultadoEvaluacion({ resultado, onReintentar }) {
           </h2>
 
           <p className="text-sm text-gray-700 mt-1">
-            {resultado.puntaje} de {resultado.puntaje_maximo} respuestas correctas
+            {resultado.puntaje} de {maximo} respuestas correctas
             {fecha && ` · Presentada el ${fecha}`}
           </p>
 
@@ -58,8 +68,8 @@ export default function ResultadoEvaluacion({ resultado, onReintentar }) {
 
       <p className="text-sm text-gray-700">
         {aprobado
-          ? 'Respondiste correctamente todas las preguntas.'
-          : 'Para aprobar debes responder correctamente todas las preguntas. Comunícate con tu responsable para recibir el refuerzo; un administrador podrá habilitarte un nuevo intento.'
+          ? mensajeAprobado
+          : `Para aprobar debes responder correctamente ${requisito}. Comunícate con tu responsable para recibir el refuerzo; un administrador podrá habilitarte un nuevo intento.`
         }
       </p>
 

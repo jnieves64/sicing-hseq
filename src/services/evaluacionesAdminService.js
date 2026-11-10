@@ -48,7 +48,7 @@ export async function getEvaluacionAdminPorId(evaluacionId) {
 
 }
 
-export async function crearEvaluacion({ titulo, descripcion, codigo, activo, categorias, preguntas }) {
+export async function crearEvaluacion({ titulo, descripcion, codigo, activo, categorias, preguntas, min_correctas }) {
 
     const response = await fetch('/api/admin/evaluaciones', {
         method: 'POST',
@@ -56,7 +56,7 @@ export async function crearEvaluacion({ titulo, descripcion, codigo, activo, cat
             'Content-Type': 'application/json',
             ...(await authHeader())
         },
-        body: JSON.stringify({ titulo, descripcion, codigo, activo, categorias, preguntas })
+        body: JSON.stringify({ titulo, descripcion, codigo, activo, categorias, preguntas, min_correctas })
     })
 
     const data = await response.json()
@@ -69,7 +69,7 @@ export async function crearEvaluacion({ titulo, descripcion, codigo, activo, cat
 
 }
 
-export async function actualizarEvaluacion(evaluacionId, { titulo, descripcion, codigo, categorias, preguntas }) {
+export async function actualizarEvaluacion(evaluacionId, { titulo, descripcion, codigo, categorias, preguntas, min_correctas }) {
 
     const response = await fetch(`/api/admin/evaluaciones/${evaluacionId}`, {
         method: 'PATCH',
@@ -77,7 +77,7 @@ export async function actualizarEvaluacion(evaluacionId, { titulo, descripcion, 
             'Content-Type': 'application/json',
             ...(await authHeader())
         },
-        body: JSON.stringify({ titulo, descripcion, codigo, categorias, preguntas })
+        body: JSON.stringify({ titulo, descripcion, codigo, categorias, preguntas, min_correctas })
     })
 
     const data = await response.json()

@@ -4,7 +4,10 @@ import {
     texto,
     validarPreguntas,
     validarCategorias,
+    validarMinimo,
     contarIntentos,
+    contarPreguntas,
+    recalcularAprobados,
     guardarCategorias,
     reemplazarPreguntas
 } from '@/lib/evaluacionesServer'
@@ -35,6 +38,7 @@ export async function GET(request, { params }) {
             descripcion,
             codigo,
             activo,
+            min_correctas,
             created_at,
             updated_at,
             evaluacion_categorias ( categoria_id ),
@@ -94,6 +98,8 @@ export async function PATCH(request, { params }) {
         return NextResponse.json({ error: errorCategorias }, { status: 400 })
     }
 
+    let totalPreguntas = null
+
     if (body.preguntas !== undefined) {
 
         const errorPreguntas = validarPreguntas(body.preguntas)
@@ -115,6 +121,62 @@ export async function PATCH(request, { params }) {
             )
         }
 
+        totalPreguntas = body.preguntas.length
+
+    }
+
+    // Mínimo para aprobar: se valida contra el total de preguntas que quedará
+    const cambiaMinimo = body.min_correctas !== undefined
+    let minimoFinal = null
+
+    if (cambiaMinimo || body.preguntas !== undefined) {
+
+        if (totalPreguntas === null) {
+
+            const { total, error: preguntasError } = await contarPreguntas(evaluacionId)
+
+            if (preguntasError) {
+                return NextResponse.json({ error: preguntasError }, { status: 400 })
+            }
+
+            totalPreguntas = total
+
+        }
+
+        if (cambiaMinimo) {
+
+            minimoFinal = Number(body.min_correctas)
+
+        } else {
+
+            // Solo cambian las preguntas: el mínimo vigente debe seguir siendo válido
+            const {
+                data: actual,
+                error: actualError
+            } = await supabaseAdmin
+                .from('evaluaciones')
+                .select('min_correctas')
+                .eq('id', evaluacionId)
+                .maybeSingle()
+
+            if (actualError) {
+                return NextResponse.json({ error: actualError.message }, { status: 400 })
+            }
+
+            if (!actual) {
+                return NextResponse.json({ error: 'Evaluación no encontrada' }, { status: 404 })
+            }
+
+            minimoFinal = actual.min_correctas
+
+        }
+
+        const errorMinimo = validarMinimo(minimoFinal, totalPreguntas)
+
+        if (errorMinimo) {
+            return NextResponse.json({ error: errorMinimo }, { status: 400 })
+        }
+
     }
 
     // 2) Campos de la evaluación
@@ -124,9 +186,10 @@ export async function PATCH(request, { params }) {
     if (body.descripcion !== undefined) camposActualizables.descripcion = texto(body.descripcion) || null
     if (body.codigo !== undefined) camposActualizables.codigo = texto(body.codigo) || null
     if (body.activo !== undefined) camposActualizables.activo = body.activo === true
+    if (cambiaMinimo) camposActualizables.min_correctas = minimoFinal
 
     // updated_at solo cambia al editar contenido, no al publicar o despublicar
-    const cambiaContenido = ['titulo', 'descripcion', 'codigo', 'categorias', 'preguntas']
+    const cambiaContenido = ['titulo', 'descripcion', 'codigo', 'categorias', 'preguntas', 'min_correctas']
         .some((campo) => body[campo] !== undefined)
 
     if (cambiaContenido) {
@@ -172,6 +235,17 @@ export async function PATCH(request, { params }) {
 
         if (preguntasError) {
             return NextResponse.json({ error: preguntasError }, { status: 400 })
+        }
+
+    }
+
+    // 5) Si cambió el mínimo, se recalcula el estado de los resultados ya guardados
+    if (cambiaMinimo) {
+
+        const { error: recalculoError } = await recalcularAprobados(evaluacionId, minimoFinal)
+
+        if (recalculoError) {
+            return NextResponse.json({ error: recalculoError }, { status: 400 })
         }
 
     }

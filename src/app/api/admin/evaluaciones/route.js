@@ -4,6 +4,7 @@ import {
     texto,
     validarPreguntas,
     validarCategorias,
+    validarMinimo,
     guardarCategorias,
     reemplazarPreguntas,
     limpiarEvaluacion
@@ -93,6 +94,18 @@ export async function POST(request) {
         return NextResponse.json({ error: errorCategorias }, { status: 400 })
     }
 
+    // Si no se envía el mínimo, se exige acertar todas las preguntas
+    const totalPreguntas = body.preguntas.length
+    const minimo = body.min_correctas === undefined
+        ? totalPreguntas
+        : Number(body.min_correctas)
+
+    const errorMinimo = validarMinimo(minimo, totalPreguntas)
+
+    if (errorMinimo) {
+        return NextResponse.json({ error: errorMinimo }, { status: 400 })
+    }
+
     const {
         data: evaluacion,
         error: evaluacionError
@@ -103,6 +116,7 @@ export async function POST(request) {
             descripcion: texto(body.descripcion) || null,
             codigo: texto(body.codigo) || null,
             activo: body.activo === true,
+            min_correctas: minimo,
             creado_por: usuarioId
         })
         .select()

@@ -21,7 +21,7 @@ export async function GET(request, { params }) {
         error: evaluacionError
     } = await supabaseAdmin
         .from('evaluaciones')
-        .select('id, titulo, codigo, activo, preguntas ( id )')
+        .select('id, titulo, codigo, activo, min_correctas, preguntas ( id )')
         .eq('id', evaluacionId)
         .maybeSingle()
 
@@ -105,6 +105,7 @@ export async function GET(request, { params }) {
             titulo: evaluacion.titulo,
             codigo: evaluacion.codigo,
             activo: evaluacion.activo,
+            min_correctas: evaluacion.min_correctas,
             total_preguntas: evaluacion.preguntas.length
         },
         resultados,

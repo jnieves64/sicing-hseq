@@ -83,6 +83,10 @@ export default function PresentarEvaluacionView() {
   const respondidas = Object.keys(respuestas).length
   const faltan = total - respondidas
 
+  // Mínimo de respuestas correctas para aprobar
+  const minimo = evaluacion.min_correctas ?? total
+  const textoMinimo = minimo >= total ? 'todas' : `al menos ${minimo} de ${total}`
+
   const handleSeleccionar = (preguntaId, opcionId) => {
     setRespuestas((actuales) => ({ ...actuales, [preguntaId]: opcionId }))
   }
@@ -164,6 +168,7 @@ export default function PresentarEvaluacionView() {
 
           <ResultadoEvaluacion
             resultado={resultado}
+            minimo={evaluacion.min_correctas}
             onReintentar={resultado.vistaPrevia ? handleReiniciar : null}
           />
 
@@ -178,7 +183,7 @@ export default function PresentarEvaluacionView() {
           >
 
             <p className="text-sm text-gray-600">
-              {total} pregunta{total === 1 ? '' : 's'}. Para aprobar debes responder correctamente todas.
+              {total} pregunta{total === 1 ? '' : 's'}. Para aprobar debes responder correctamente {textoMinimo}.
               {!esAdmin && ' Solo tienes un intento.'}
             </p>
 

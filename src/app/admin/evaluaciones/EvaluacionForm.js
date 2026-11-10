@@ -15,8 +15,8 @@ import {
 export default function EvaluacionForm({
     evaluacion,        // undefined = modo creación, objeto = modo edición
     categorias,
-    onSubmit,          // crear: recibe { titulo, descripcion, codigo, activo, categorias, preguntas }
-                       // editar: recibe { titulo, descripcion, codigo, categorias, preguntas? }
+    onSubmit,          // crear: recibe { titulo, descripcion, codigo, activo, categorias, preguntas, min_correctas }
+                       // editar: recibe { titulo, descripcion, codigo, categorias, preguntas?, min_correctas? }
 }) {
 
     const router = useRouter()
@@ -36,6 +36,12 @@ export default function EvaluacionForm({
             ? preguntasDesdeServidor(evaluacion.preguntas)
             : [crearPregunta('opcion')]
     )
+
+    // Mínimo para aprobar: al crear sigue el total de preguntas hasta que se edite;
+    // al editar se respeta el valor guardado
+    const [minimo, setMinimo] = useState(esEdicion ? String(evaluacion.min_correctas ?? '') : '')
+    const [minimoEditado, setMinimoEditado] = useState(esEdicion)
+    const valorMinimo = minimoEditado ? minimo : String(preguntas.length)
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
@@ -65,6 +71,27 @@ export default function EvaluacionForm({
             }
         }
 
+        const total = preguntas.length
+        const minimoNumero = Number(valorMinimo)
+
+        if (valorMinimo === '' || !Number.isInteger(minimoNumero) || minimoNumero < 1) {
+            setError('Indica cuántas respuestas correctas se necesitan para aprobar (un número entero desde 1).')
+            return
+        }
+
+        if (minimoNumero > total) {
+            setError(`El mínimo para aprobar (${minimoNumero}) no puede superar el número de preguntas (${total}).`)
+            return
+        }
+
+        const minimoCambio = esEdicion && minimoNumero !== evaluacion.min_correctas
+
+        if (minimoCambio && resultados > 0 && !window.confirm(
+            'Esta evaluación ya tiene resultados. Al cambiar el mínimo para aprobar se recalculará el estado de todos ellos: algunos pueden pasar de "Requiere refuerzo" a "Aprobada" o al revés. ¿Continuar?'
+        )) {
+            return
+        }
+
         setLoading(true)
 
         const datos = {
@@ -73,7 +100,11 @@ export default function EvaluacionForm({
             codigo,
             categorias: categoriaIds,
             // undefined = el servidor no toca las preguntas
-            preguntas: bloqueado ? undefined : preguntasParaEnviar(preguntas)
+            preguntas: bloqueado ? undefined : preguntasParaEnviar(preguntas),
+            // al editar solo se envía si cambió; al crear siempre
+            min_correctas: esEdicion
+                ? (minimoCambio ? minimoNumero : undefined)
+                : minimoNumero
         }
 
         if (!esEdicion) {
@@ -108,8 +139,8 @@ export default function EvaluacionForm({
             {bloqueado && (
                 <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
                     Esta evaluación tiene {resultados} resultado{resultados === 1 ? '' : 's'} registrado{resultados === 1 ? '' : 's'}.
-                    Solo puedes editar el título, la descripción, el código y las categorías. Para cambiar las preguntas,
-                    crea una evaluación nueva.
+                    Solo puedes editar el título, la descripción, el código, las categorías y el mínimo para aprobar.
+                    Para cambiar las preguntas, crea una evaluación nueva.
                 </div>
             )}
 
@@ -195,6 +226,51 @@ export default function EvaluacionForm({
                     selected={categoriaIds}
                     onChange={setCategoriaIds}
                 />
+            </div>
+
+            {/* Criterio de aprobación */}
+            <div className="space-y-3">
+
+                <h2 className="text-base font-semibold text-black">Criterio de aprobación</h2>
+
+                <p className="text-sm text-gray-500">
+                    Cantidad de respuestas correctas necesarias para aprobar. Cada pregunta vale 1 punto.
+                </p>
+
+                <div className="flex items-center gap-3">
+
+                    <input
+                        type="number"
+                        min={1}
+                        max={preguntas.length || undefined}
+                        value={valorMinimo}
+                        onChange={(event) => {
+                            setMinimo(event.target.value)
+                            setMinimoEditado(true)
+                        }}
+                        disabled={loading}
+                        aria-label="Respuestas correctas necesarias para aprobar"
+                        className="w-24 border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 disabled:opacity-60"
+                    />
+
+                    <span className="text-sm text-gray-600">
+                        de {preguntas.length} pregunta{preguntas.length === 1 ? '' : 's'}
+                    </span>
+
+                </div>
+
+                {!esEdicion && !minimoEditado && (
+                    <p className="text-xs text-gray-400">
+                        Por defecto se exige acertar todas las preguntas. Cámbialo si basta con menos.
+                    </p>
+                )}
+
+                {bloqueado && (
+                    <p className="text-xs text-amber-700">
+                        Si cambias este valor, se recalculará el estado de los resultados ya registrados.
+                    </p>
+                )}
+
             </div>
 
             {/* Preguntas */}

@@ -28,6 +28,7 @@ export async function GET(request, { params }) {
             descripcion,
             codigo,
             activo,
+            min_correctas,
             preguntas (
                 id,
                 enunciado,
@@ -54,6 +55,7 @@ export async function GET(request, { params }) {
         descripcion: evaluacion.descripcion,
         codigo: evaluacion.codigo,
         activo: evaluacion.activo,
+        min_correctas: evaluacion.min_correctas,
         total_preguntas: evaluacion.preguntas.length
     }
 
